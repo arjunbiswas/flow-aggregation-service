@@ -1,2 +1,2 @@
-# flow-aggregation-service
-Simple aggregation of sample net flow data
+# netFlowEntity-aggregation-service
+Simple aggregation of sample net netFlowEntity data
