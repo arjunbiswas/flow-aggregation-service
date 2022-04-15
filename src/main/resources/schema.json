@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "http://example.com/example.json",
+  "type": "object",
+  "title": "The root schema",
+  "description": "The root schema comprises the entire JSON document.",
+  "default": {},
+  "examples": [
+    {
+      "src_app": "foo",
+      "dest_app": "bar",
+      "vpc_id": "vpc-0",
+      "bytes_tx": 100,
+      "bytes_rx": 300,
+      "hour": 1
+    }
+  ],
+  "required": [
+    "src_app",
+    "dest_app",
+    "vpc_id",
+    "bytes_tx",
+    "bytes_rx",
+    "hour"
+  ],
+  "properties": {
+    "src_app": {
+      "$id": "#/properties/src_app",
+      "type": "string",
+      "title": "The src_app schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": [
+        "foo"
+      ]
+    },
+    "dest_app": {
+      "$id": "#/properties/dest_app",
+      "type": "string",
+      "title": "The dest_app schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": [
+        "bar"
+      ]
+    },
+    "vpc_id": {
+      "$id": "#/properties/vpc_id",
+      "type": "string",
+      "title": "The vpc_id schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": [
+        "vpc-0"
+      ]
+    },
+    "bytes_tx": {
+      "$id": "#/properties/bytes_tx",
+      "type": "integer",
+      "title": "The bytes_tx schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": [
+        100
+      ]
+    },
+    "bytes_rx": {
+      "$id": "#/properties/bytes_rx",
+      "type": "integer",
+      "title": "The bytes_rx schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": [
+        300
+      ]
+    },
+    "hour": {
+      "$id": "#/properties/hour",
+      "type": "integer",
+      "title": "The hour schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": [
+        1
+      ]
+    }
+  },
+  "additionalProperties": true
+}
