@@ -8,11 +8,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class FlowAggregationService {
 
-	private static final Logger LOGGER= LoggerFactory.getLogger(FlowAggregationService.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(FlowAggregationService.class);
 
-	public static void main(String[] args) {
-		SpringApplication.run(FlowAggregationService.class, args);
-		LOGGER.info("Simple SpringApplication for netflow aggregation started");
-	}
+  public static void main(String[] args) {
+    SpringApplication.run(FlowAggregationService.class, args);
+    LOGGER.info("Simple SpringApplication for netflow aggregation started");
+  }
 
 }

@@ -24,44 +24,43 @@ public class InMemoryStorageRepository implements FlowStorageRepository {
 
   /**
    * The array has 24 slots for 24 hours . Every index of the array corresponds to an hourly
-   * Concurrent HashMap . For hourly indexes based on days another level of lookup using day
-   * as key would be useful . Day --> Hour --> DataMap . ConcurrentHashMaps do not lock the
-   * entire map and locks segments of the map and by default the size of  ConcurrentHashMaps are 16
+   * Concurrent HashMap . For hourly indexes based on days another level of lookup using day as key
+   * would be useful . Day --> Hour --> DataMap . ConcurrentHashMaps do not lock the entire map and
+   * locks segments of the map and by default the size of  ConcurrentHashMaps are 16
    **/
   private static ConcurrentHashMap<Integer, AtomicIntegerArray>[] hourlyCache = new ConcurrentHashMap[24];
-  private static  JSONObject jsonSchema;
+  private static JSONObject jsonSchema;
 
   /**
    * This method takes in a list of netflow logs and persists it in an in-memory store
-   * @return
    */
   @Override
   public List<NetFlowEntity> save(List<NetFlowEntity> netFlowEntities) {
     LOGGER.debug("Starting save() process for {} netflow json rows", netFlowEntities.size());
     List<NetFlowEntity> errorSet = new ArrayList<>();
-    for (NetFlowEntity netFlowEntity : netFlowEntities) {
-      ConcurrentHashMap<Integer, AtomicIntegerArray> hourlyMapStore = hourlyCache[
-          netFlowEntity.getHour()];
-      if (validateInputJsonRow(netFlowEntity)) {
-        if (hourlyMapStore != null) {
-          foundExistingHourlyBucket(netFlowEntity, hourlyMapStore);
+    synchronized (this) {
+      for (NetFlowEntity netFlowEntity : netFlowEntities) {
+        ConcurrentHashMap<Integer, AtomicIntegerArray> hourlyMapStore = hourlyCache[
+            netFlowEntity.getHour()];
+        if (validateInputJsonRow(netFlowEntity)) {
+          if (hourlyMapStore != null) {
+            foundExistingHourlyBucket(netFlowEntity, hourlyMapStore);
+          } else {
+            createNewHourlyBucket(netFlowEntity);
+          }
         } else {
-          createNewHourlyBucket(netFlowEntity);
+          errorSet.add(netFlowEntity);
         }
-      } else {
-        errorSet.add(netFlowEntity);
       }
+      return errorSet;
     }
-    return errorSet;
   }
 
   /**
    * Method to validate input json row against schema
-   * @param netFlowEntity
-   * @return
    */
   private boolean validateInputJsonRow(NetFlowEntity netFlowEntity) {
-    if (jsonSchema == null ) {
+    if (jsonSchema == null) {
       jsonSchema = new JSONObject(
           new JSONTokener(InMemoryStorageRepository.class.getResourceAsStream("/schema.json")));
     }
@@ -77,8 +76,6 @@ public class InMemoryStorageRepository implements FlowStorageRepository {
 
   /**
    * Add/update new data in existing hourly cache
-   * @param netFlowEntity
-   * @param hourlyMapStore
    */
   private void foundExistingHourlyBucket(NetFlowEntity netFlowEntity,
       ConcurrentHashMap<Integer, AtomicIntegerArray> hourlyMapStore) {
@@ -99,7 +96,8 @@ public class InMemoryStorageRepository implements FlowStorageRepository {
 
       int flowKey = netFlowEntity.hashCode();
       intKeyToCompositeKey.putIfAbsent(flowKey, netFlowEntity);
-      LOGGER.debug("Setting composite key for data @key{} @hour{}", netFlowEntity.hashCode(), netFlowEntity.getHour());
+      LOGGER.debug("Setting composite key for data @key{} @hour{}", netFlowEntity.hashCode(),
+          netFlowEntity.getHour());
       hourlyMapStore.put(netFlowEntity.hashCode(), tXrXArray);
 
       hourlyCache[netFlowEntity.getHour()] = hourlyMapStore;
@@ -108,10 +106,10 @@ public class InMemoryStorageRepository implements FlowStorageRepository {
 
   /**
    * Creates a new hourly cache and add/update new data
-   * @param netFlowEntity
    */
   private void createNewHourlyBucket(NetFlowEntity netFlowEntity) {
-    LOGGER.debug("No existing bucket for data @hour{} .. creating new bucket", netFlowEntity.getHour());
+    LOGGER.debug("No existing bucket for data @hour{} .. creating new bucket",
+        netFlowEntity.getHour());
     Map<Integer, AtomicIntegerArray> newHourlyMap = new ConcurrentHashMap<>(16);
     AtomicIntegerArray tXrXArray = new AtomicIntegerArray(2);
 
@@ -126,7 +124,9 @@ public class InMemoryStorageRepository implements FlowStorageRepository {
     hourlyCache[netFlowEntity.getHour()] = (ConcurrentHashMap<Integer, AtomicIntegerArray>) newHourlyMap;
   }
 
-  /** atomically updating the values */
+  /**
+   * atomically updating the values
+   */
   private void atomicUpdatesOfBytesTyBytesRx(NetFlowEntity netFlowEntity,
       AtomicIntegerArray tXrXArray) {
     tXrXArray.getAndAdd(0, netFlowEntity.getBytes_tx());
